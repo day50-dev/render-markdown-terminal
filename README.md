@@ -5,6 +5,8 @@
 <br/><strong>Terminal streaming markdown that rocks</strong>
 
 </p>
+
+
 Streamdown, part of the [DAY50](https://day50.dev) suite of open-source tools for AI workflows, is designed for the wide variety of markdown from various LLM models. 
 
 Beautify markdown from any terminal application, any source, in any context, in realtime.
