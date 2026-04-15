@@ -20,7 +20,10 @@ fi
 import sys
 from pathlib import Path
 
-from sdlib import main
+if not __package__:
+    from sdlib import main
+else:
+    from .sdlib import main
 
 if __name__ == "__main__": 
     main()

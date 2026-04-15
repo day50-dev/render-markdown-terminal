@@ -44,7 +44,10 @@ from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import TerminalTrueColorFormatter
 from pygments.styles import get_style_by_name
-from plugins import *
+if not __package__:
+    from plugins import *
+else:
+    from .plugins import *
 
 default_toml = """
 [features]
