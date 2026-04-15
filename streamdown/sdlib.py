@@ -1,22 +1,4 @@
-#!/usr/bin/env bash
-# /// script
-# requires-python = ">=3.8"
-# dependencies = [
-#     "pygments",
-#     "pylatexenc",
-#     "appdirs",
-#     "term-image",
-#     "wcwidth",
-#     "toml"
-# ]
-# ///
-'''':
-if command -v uv &> /dev/null; then
-    exec uv run --script "$0" "$@"
-else
-    exec python3 "$0" "$@"
-fi
-'''
+#!/usr/bin/env python3
 import appdirs, toml
 import logging, tempfile
 import os,      sys
@@ -166,7 +148,7 @@ class Streamdown:
     
     def setup(self, config_path = None, 
               H = None, S = None, V = None, 
-              plaintext = False, scrape = None, width = None, prompt = None):
+              plaintext = False, scrape = None, width = 0, prompt = " >"):
         """Configure and initialize the Streamdown instance.
 
         Load configuration, set style based on HSV values, and initialise feature
@@ -216,6 +198,7 @@ class Streamdown:
         self.Style.Plaintext = plaintext
         self.Style.Blockquote = f"{FG}{self.Style.Grey}│ "
         self.Style.MarginSpaces = " " * self.Style.Margin
+        globals()['Style'] = self.Style
 
         for attr in ['Links', 'Images', 'CodeSpaces', 'Clipboard', 'Logging', 'Timeout', 'Savebrace']:
             setattr(self.state, attr, features.get(attr))
@@ -248,6 +231,9 @@ class Streamdown:
 
         if not self._setup:
             self.setup()
+
+        if type(inp) is str:
+            inp = BytesIO(inp.encode('utf-8'))
 
         return emit(inp)
 
@@ -320,6 +306,7 @@ class ParseState:
 
         self.exit = 0
         self.where_from = None
+        globals()['state'] = self
 
     def current(self):
         state = { 'inline': self.inline_code, 'code': self.in_code, 'bold': self.in_bold, 'italic': self.in_italic, 'underline': self.in_underline, 'strikeout': self.in_strikeout }
