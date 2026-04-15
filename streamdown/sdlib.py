@@ -210,7 +210,7 @@ class Streamdown:
 
     def tidyup(self):
         """Returns the terminal to normal"""
-        if os.isatty(sys.stdout.fileno()) and self.state.Clipboard and self.state.code_buffer_raw:
+        if os.isatty(sys.stdout.fileno()) and state.Clipboard and state.code_buffer_raw:
             code = self.state.code_buffer_raw
             # code needs to be a base64 encoded string before emitting
             code_bytes = code.encode('utf-8')
