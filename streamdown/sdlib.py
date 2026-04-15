@@ -142,7 +142,9 @@ class Goto(Exception):
 class Streamdown:
     def __init__(self):
         self.Style = StyleClass()
-        self.state = ParseState()
+        self.state = ParseState(style=self.Style)
+        globals()['Style'] = self.Style
+        globals()['state'] = self.state
         self._setup = False
         pass
     
@@ -198,20 +200,49 @@ class Streamdown:
         self.Style.Plaintext = plaintext
         self.Style.Blockquote = f"{FG}{self.Style.Grey}│ "
         self.Style.MarginSpaces = " " * self.Style.Margin
-        globals()['Style'] = self.Style
-        globals()['state'] = self.state
 
         for attr in ['Links', 'Images', 'CodeSpaces', 'Clipboard', 'Logging', 'Timeout', 'Savebrace']:
             setattr(self.state, attr, features.get(attr))
 
         self.state.WidthArg = int(width) or style.get("Width") or 0
         self.state.prompt_regex = re.compile(prompt)
-        width_calc()
+        self.width_calc()
         self._setup = True
+
+    def width_calc(self):
+        if self.state.WidthArg:
+           width = self.state.WidthArg
+        else:
+           try:
+               width = shutil.get_terminal_size().columns
+               self.state.WidthWrap = True
+           except (AttributeError, OSError):
+               # this means it's a pager, we can just ignore the base64 clipboard
+               width = 80
+               pass
+
+
+        # This can't be done because our list item stack can change as well so
+        # unless we want to track that too, we're SOL
+        #if state.WidthFull == width:
+        #    return
+
+        self.state.WidthFull = width
+
+        self.state.Width = self.state.WidthFull - 2 * self.Style.Margin
+        pre = self.state.space_left(listwidth=True) if self.Style.PrettyBroken else ''
+        design  = [FG, '▄','▀'] if Style.PrettyPad else [BG, ' ',' ']
+        Style.Codepad = [
+            f"{pre}{RESET}{design[0]}{Style.Dark}{design[1] * self.state.full_width()}{RESET}\n",
+            f"{pre}{RESET}{design[0]}{Style.Dark}{design[2] * self.state.full_width()}{RESET}"
+        ]
 
     def tidyup(self):
         """Returns the terminal to normal"""
-        if os.isatty(sys.stdout.fileno()) and state.Clipboard and state.code_buffer_raw:
+        if not self._setup:
+            self.setup()
+        
+        if os.isatty(sys.stdout.fileno()) and self.state.Clipboard and self.state.code_buffer_raw:
             code = self.state.code_buffer_raw
             # code needs to be a base64 encoded string before emitting
             code_bytes = code.encode('utf-8')
@@ -225,7 +256,15 @@ class Streamdown:
             if self.state.exec_sub:
                 self.state.exec_sub.wait()
 
-        print(terminal_prep(RESET), end="")
+        print(self.terminal_prep(RESET), end="")
+
+    def terminal_prep(self, what):
+        if self.Style.Plaintext:
+            line = "\n".join([x.rstrip() for x in strip_ansi(what).split("\n")])
+            if len(line.strip()) == 0:
+              return ""
+            return line
+        return what
 
     def render(self,inp):
         """Renders the content"""
@@ -236,7 +275,52 @@ class Streamdown:
         if type(inp) is str:
             inp = BytesIO(inp.encode('utf-8'))
 
-        return emit(inp)
+        return self.emit(inp)
+
+    def emit(self, inp):
+        buffer = []
+        flush = False
+        for chunk in parse(inp):
+            self.width_calc()
+            if state.emit_flag:
+                if state.emit_flag == Code.Flush:
+                    flush = True
+                    state.emit_flag = None
+                else:
+                    buffer[0] = emit_h(state.emit_flag, buffer[0])
+                    state.emit_flag = None
+                    continue
+
+            if not state.has_newline:
+                chunk = chunk.rstrip("\n")
+            elif not chunk.endswith("\n"):
+                chunk += "\n"
+
+            if chunk.endswith("\n"):
+                state.current_line = ''
+            else:
+                state.current_line += chunk
+                
+            buffer.append(chunk)
+            # This *might* be dangerous
+            state.reset_inline()
+
+            if flush:
+                chunk = "\n".join(buffer)
+                buffer = []
+                flush = False
+
+            elif len(buffer) == 1:
+                continue
+
+            else:
+                chunk = buffer.pop(0)
+
+            print(self.terminal_prep(chunk), end="", file=sys.stdout, flush=True)
+
+        if len(buffer):
+            print(self.terminal_prep(buffer.pop(0)), file=sys.stdout, end="", flush=True)
+
 
 class StyleClass:
     def __init__(self):
@@ -250,7 +334,8 @@ class Code:
     Flush = 'flush'
 
 class ParseState:
-    def __init__(self):
+    def __init__(self, style):
+        self.style = style
         self.buffer = b''
         self.current_line = ''
         self.first_line = True
@@ -324,8 +409,8 @@ class ParseState:
         return self.Width - (len(visible(self.space_left(listwidth)))) + Style.Margin
 
     def space_left(self, listwidth = False):
-        pre = ' ' * (len(state.list_item_stack)) * Style.ListIndent if listwidth else ''
-        return pre + Style.MarginSpaces + (Style.Blockquote * self.block_depth) if len(self.current_line) == 0 else "" 
+        pre = ' ' * (len(state.list_item_stack)) * self.style.ListIndent if listwidth else ''
+        return pre + self.style.MarginSpaces + (self.style.Blockquote * self.block_depth) if len(self.current_line) == 0 else "" 
 
 def override_background(style_name, background_color):
     base_style = get_style_by_name(style_name)
@@ -1118,57 +1203,6 @@ def parse(stream):
             for wrapped_line in wrapped_lines:
                 yield f"{state.space_left()}{wrapped_line}\n"
 
-def terminal_prep(what):
-    if Style.Plaintext:
-        line = "\n".join([x.rstrip() for x in strip_ansi(what).split("\n")])
-        if len(line.strip()) == 0:
-          return ""
-        return line
-    return what
-
-def emit(inp):
-    buffer = []
-    flush = False
-    for chunk in parse(inp):
-        width_calc()
-        if state.emit_flag:
-            if state.emit_flag == Code.Flush:
-                flush = True
-                state.emit_flag = None
-            else:
-                buffer[0] = emit_h(state.emit_flag, buffer[0])
-                state.emit_flag = None
-                continue
-
-        if not state.has_newline:
-            chunk = chunk.rstrip("\n")
-        elif not chunk.endswith("\n"):
-            chunk += "\n"
-
-        if chunk.endswith("\n"):
-            state.current_line = ''
-        else:
-            state.current_line += chunk
-            
-        buffer.append(chunk)
-        # This *might* be dangerous
-        state.reset_inline()
-
-        if flush:
-            chunk = "\n".join(buffer)
-            buffer = []
-            flush = False
-
-        elif len(buffer) == 1:
-            continue
-
-        else:
-            chunk = buffer.pop(0)
-
-        print(terminal_prep(chunk), end="", file=sys.stdout, flush=True)
-
-    if len(buffer):
-        print(terminal_prep(buffer.pop(0)), file=sys.stdout, end="", flush=True)
 
 def ansi2hex(ansi_code):
     parts = ansi_code.strip('m').split(";")
@@ -1179,34 +1213,6 @@ def apply_multipliers(style, name, H, S, V):
     m = style.get(name)
     r, g, b = colorsys.hsv_to_rgb(min(1.0, H * m["H"]), min(1.0, S * m["S"]), min(1.0, V * m["V"]))
     return ';'.join([str(int(x * 255)) for x in [r, g, b]]) + "m"
-
-def width_calc():
-    if state.WidthArg:
-       width = state.WidthArg
-    else:
-       try:
-           width = shutil.get_terminal_size().columns
-           state.WidthWrap = True
-       except (AttributeError, OSError):
-           # this means it's a pager, we can just ignore the base64 clipboard
-           width = 80
-           pass
-
-
-    # This can't be done because our list item stack can change as well so
-    # unless we want to track that too, we're SOL
-    #if state.WidthFull == width:
-    #    return
-
-    state.WidthFull = width
-
-    state.Width = state.WidthFull - 2 * Style.Margin
-    pre = state.space_left(listwidth=True) if Style.PrettyBroken else ''
-    design  = [FG, '▄','▀'] if Style.PrettyPad else [BG, ' ',' ']
-    Style.Codepad = [
-        f"{pre}{RESET}{design[0]}{Style.Dark}{design[1] * state.full_width()}{RESET}\n",
-        f"{pre}{RESET}{design[0]}{Style.Dark}{design[2] * state.full_width()}{RESET}"
-    ]
 
 
 _sd = Streamdown()
@@ -1276,7 +1282,7 @@ def main():
             # Set stdin to raw mode so we don't need to press enter
             tty.setcbreak(sys.stdin.fileno())
             sys.stdout.write("\x1b[?7h")
-            emit(inp)
+            _sd.emit(inp)
 
         elif args.filenameList:
             # Let's say we only care about logging in streams
