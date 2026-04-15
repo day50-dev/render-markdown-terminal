@@ -199,6 +199,7 @@ class Streamdown:
         self.Style.Blockquote = f"{FG}{self.Style.Grey}│ "
         self.Style.MarginSpaces = " " * self.Style.Margin
         globals()['Style'] = self.Style
+        globals()['state'] = self.state
 
         for attr in ['Links', 'Images', 'CodeSpaces', 'Clipboard', 'Logging', 'Timeout', 'Savebrace']:
             setattr(self.state, attr, features.get(attr))
@@ -306,7 +307,6 @@ class ParseState:
 
         self.exit = 0
         self.where_from = None
-        globals()['state'] = self
 
     def current(self):
         state = { 'inline': self.inline_code, 'code': self.in_code, 'bold': self.in_bold, 'italic': self.in_italic, 'underline': self.in_underline, 'strikeout': self.in_strikeout }
