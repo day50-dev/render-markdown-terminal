@@ -287,7 +287,8 @@ class Streamdown:
                     flush = True
                     state.emit_flag = None
                 else:
-                    buffer[0] = emit_h(state.emit_flag, buffer[0])
+                    if len(buffer):
+                        buffer[0] = emit_h(state.emit_flag, buffer[0])
                     state.emit_flag = None
                     continue
 
