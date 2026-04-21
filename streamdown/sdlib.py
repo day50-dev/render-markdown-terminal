@@ -104,20 +104,23 @@ remove_ansi = lambda line, codeList: reduce(lambda line, code: line.replace(code
 split_up = lambda line: re.findall(r'(\x1b[^m]*m|[^\x1b]*)', line)
 
 def gettmpdir():
-    tmp_dir_all = os.path.join(tempfile.gettempdir(), "sd")
-    prev_mask = os.umask(0)
-    os.makedirs(tmp_dir_all, mode=0o777, exist_ok=True)
-    os.chmod(tmp_dir_all, 0o777)
+    try:
+        tmp_dir_all = os.path.join(tempfile.gettempdir(), "sd")
+        prev_mask = os.umask(0)
+        os.makedirs(tmp_dir_all, mode=0o777, exist_ok=True)
+        os.chmod(tmp_dir_all, 0o777)
 
-    if os.name != 'nt':
-        tmp_dir = os.path.join(tmp_dir_all, str(os.getuid()))
-    else:
-        tmp_dir = tmp_dir_all
+        if os.name != 'nt':
+            tmp_dir = os.path.join(tmp_dir_all, str(os.getuid()))
+        else:
+            tmp_dir = tmp_dir_all
 
-    # This is shared among all users
-    os.makedirs(tmp_dir, exist_ok=True)
-    os.umask(prev_mask)
-    return tmp_dir
+        # This is shared among all users
+        os.makedirs(tmp_dir, exist_ok=True)
+        os.umask(prev_mask)
+        return tmp_dir
+    except:
+        return None
 
 def debug_write(text):
     if state.Logging:
