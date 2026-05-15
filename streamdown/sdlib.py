@@ -108,7 +108,10 @@ def gettmpdir():
         tmp_dir_all = os.path.join(tempfile.gettempdir(), "sd")
         prev_mask = os.umask(0)
         os.makedirs(tmp_dir_all, mode=0o777, exist_ok=True)
-        os.chmod(tmp_dir_all, 0o777)
+        try:
+          os.chmod(tmp_dir_all, 0o777)
+        except:
+          pass
 
         if os.name != 'nt':
             tmp_dir = os.path.join(tmp_dir_all, str(os.getuid()))
@@ -120,13 +123,16 @@ def gettmpdir():
         os.umask(prev_mask)
         return tmp_dir
     except:
-        return None
+        return "/tmp/"
 
 def debug_write(text):
     if state.Logging:
-        if state.Logging == True:
-            state.Logging = tempfile.NamedTemporaryFile(dir=gettmpdir(), prefix="dbg", delete=False, mode="wb")
-        state.Logging.write(text)
+        try:
+            if state.Logging == True:
+                state.Logging = tempfile.NamedTemporaryFile(dir=gettmpdir(), prefix="dbg", delete=False, mode="wb")
+            state.Logging.write(text)
+        except Exception as ex:
+            logging.warning(f"Unable to use the savebrace feature {ex}")
 
 def sub_extract(line, upto):
     # this takes the line up to the upto string and then returns the ansi codes
