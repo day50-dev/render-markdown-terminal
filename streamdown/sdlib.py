@@ -39,6 +39,7 @@ Logging    = false
 Timeout    = 0.1
 Savebrace  = true
 Images     = true
+Network    = true
 Links      = true
 
 [style]
@@ -210,7 +211,7 @@ class Streamdown:
         self.Style.Blockquote = f"{FG}{self.Style.Grey}│ "
         self.Style.MarginSpaces = " " * self.Style.Margin
 
-        for attr in ['Links', 'Images', 'CodeSpaces', 'Clipboard', 'Logging', 'Timeout', 'Savebrace']:
+        for attr in ['Links', 'Images', 'CodeSpaces', 'Network', 'Clipboard', 'Logging', 'Timeout', 'Savebrace']:
             setattr(self.state, attr, features.get(attr))
 
         self.state.WidthArg = int(width) or style.get("Width") or 0
@@ -669,8 +670,13 @@ def line_format(line):
     def process_images(match):
         url = match.group(2)
         try:
-            if re.match(r"https://", url.lower()):
-                image = from_url(url)
+            if re.match(r"https?://", url.lower()):
+                # Don't make this and ... essentially we want network images to fail under
+                # this constraint
+                if state.Network:
+                    image = from_url(url)
+                else:
+                    return ': '.join(match.groups())
             else: 
                 image = from_file(url)
             image.height = 20
