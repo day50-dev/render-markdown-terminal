@@ -114,7 +114,8 @@ Symbol = { H = 1.0, S = 1.8, V = 1.8 } # Make symbols more vibrant
 **`[features]`**
 
 Controls optional features:
-
+* `Network` (boolean, default: `true`): controls whether network calls are made (such as for the rendering of remote images)
+* `Images` (boolean, default: `true`): controls whether images are rendered or not.
 *   `CodeSpaces` (boolean, default: `true`): Enables detection of code blocks indented with 4 spaces. Set to `false` to disable this detection method (triple-backtick blocks still work).
 *   `Clipboard` (boolean, default: `true`): Enables copying the last code block encountered to the system clipboard using OSC 52 escape sequences upon exit. Set to `false` to disable.
 *   `Logging` (boolean, default: `false`): Enables logging to tmpdir (/tmp/sd) of the raw markdown for debugging and bug reporting. The logging uses an emoji as a record separator so the actual streaming delays can be simulated and replayed. If you use the `filename` based invocation, that is to say, `sd <filename>`, this type of logging is always off.
