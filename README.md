@@ -114,6 +114,7 @@ Symbol = { H = 1.0, S = 1.8, V = 1.8 } # Make symbols more vibrant
 **`[features]`**
 
 Controls optional features:
+* `Timeout` (float, default: `0.1`): controls the select timeout for streaming. This usually doesn't have to be modified.
 * `Network` (boolean, default: `true`): controls whether network calls are made (such as for the rendering of remote images). See [#29](https://github.com/day50-dev/render-markdown-terminal/issues/29)
 * `Images` (boolean, default: `true`): controls whether images are rendered or not.
 *   `CodeSpaces` (boolean, default: `true`): Enables detection of code blocks indented with 4 spaces. Set to `false` to disable this detection method (triple-backtick blocks still work).
