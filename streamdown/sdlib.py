@@ -1227,7 +1227,10 @@ def ansi2hex(ansi_code):
 
 def apply_multipliers(style, name, H, S, V):
     m = style.get(name)
-    r, g, b = colorsys.hsv_to_rgb(min(1.0, H * m["H"]), min(1.0, S * m["S"]), min(1.0, V * m["V"]))
+    if isinstance(m, str) and m[0] == '#':
+        r, g, b = tuple(float(int(m[i:i+2], 16))/256 for i in (1, 3, 5))
+    else:
+        r, g, b = colorsys.hsv_to_rgb(min(1.0, H * m["H"]), min(1.0, S * m["S"]), min(1.0, V * m["V"]))
     return ';'.join([str(int(x * 255)) for x in [r, g, b]]) + "m"
 
 
