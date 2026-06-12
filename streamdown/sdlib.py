@@ -136,7 +136,10 @@ def debug_write(text):
             logging.warning(f"Unable to use the savebrace feature {ex}")
 
 def sub_extract(line, upto):
+    #print('||'.join(extract_ansi_codes(line[:line.find(upto)])))
+    return ''
     # this takes the line up to the upto string and then returns the ansi codes
+    # This is the italics newline bug ... 
     return ''.join(extract_ansi_codes(line[:line.find(upto)]))
 
 def savebrace():
