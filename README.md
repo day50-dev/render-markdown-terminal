@@ -17,7 +17,7 @@ As both a fast standards-compliant library and a powerful CLI, it supports stand
 $ uv tool install streamdown
 ```
 
-You can also use it in code as a library
+Using it as a library:
 
 ```
 sd = Streamdown()
