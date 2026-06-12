@@ -85,7 +85,7 @@ Here are the sections:
 
 Defines the base Hue (H), Saturation (S), and Value (V) from which all other palette colors are derived. This can also be specified at runtime via command line arguments. See below! 
 
-The default values are [at the beginning of the source](https://github.com/kristopolous/Streamdown/blob/main/streamdown/sd.py#L33).
+The default values are [at the beginning of the source](https://github.com/kristopolous/Streamdown/blob/main/streamdown/sdlib.py#L33).
 
 *   `HSV`: [ 0.0 - 1.0, 0.0 - 1.0, 0.0 - 1.0 ] 
 *   `Dark`: Multipliers for background elements, code blocks. 
@@ -114,7 +114,9 @@ Symbol = { H = 1.0, S = 1.8, V = 1.8 } # Make symbols more vibrant
 **`[features]`**
 
 Controls optional features:
-
+* `Timeout` (float, default: `0.1`): controls the select timeout for streaming. This usually doesn't have to be modified.
+* `Network` (boolean, default: `true`): controls whether network calls are made (such as for the rendering of remote images). See [#29](https://github.com/day50-dev/render-markdown-terminal/issues/29)
+* `Images` (boolean, default: `true`): controls whether images are rendered or not.
 *   `CodeSpaces` (boolean, default: `true`): Enables detection of code blocks indented with 4 spaces. Set to `false` to disable this detection method (triple-backtick blocks still work).
 *   `Clipboard` (boolean, default: `true`): Enables copying the last code block encountered to the system clipboard using OSC 52 escape sequences upon exit. Set to `false` to disable.
 *   `Logging` (boolean, default: `false`): Enables logging to tmpdir (/tmp/sd) of the raw markdown for debugging and bug reporting. The logging uses an emoji as a record separator so the actual streaming delays can be simulated and replayed. If you use the `filename` based invocation, that is to say, `sd <filename>`, this type of logging is always off.
