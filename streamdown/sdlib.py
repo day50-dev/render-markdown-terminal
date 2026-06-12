@@ -421,7 +421,12 @@ class ParseState:
 
     def space_left(self, listwidth = False):
         pre = ' ' * (len(state.list_item_stack)) * self.style.ListIndent if listwidth else ''
-        return pre + self.style.MarginSpaces + (self.style.Blockquote * self.block_depth) if len(self.current_line) == 0 else "" 
+
+        if len(self.current_line) == 0:
+          # We want the pre to go at the end because the Blockquote style is the |. This model
+          # permits the line to be straight all the way down 
+          return self.style.MarginSpaces + (self.style.Blockquote * self.block_depth) + pre
+        return ""
 
 def override_background(style_name, background_color):
     base_style = get_style_by_name(style_name)
