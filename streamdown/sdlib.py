@@ -161,7 +161,7 @@ class Streamdown:
         self._setup = False
         pass
     
-    def setup(self, config_path = None, 
+    def setup(self, config_path = None, config_string = None,
               H = None, S = None, V = None, 
               plaintext = False, scrape = None, width = 0, prompt = " >"):
         """Configure and initialize the Streamdown instance.
@@ -207,6 +207,19 @@ class Streamdown:
             setattr(self.Style, color, apply_multipliers(style, color, H, S, V))
         for attr in ['PrettyPad', 'PrettyBroken', 'Margin', 'ListIndent', 'Syntax', 'Plaintext']:
             setattr(self.Style, attr, style.get(attr))
+        for attr in ['Links', 'Images', 'CodeSpaces', 'Network', 'Clipboard', 'Logging', 'Timeout', 'Savebrace']:
+            setattr(self.state, attr, features.get(attr))
+
+        if config_string:
+            for stanza in config_string.split(":"):
+                key, value = stanza.split('=')
+                section, param = key.split('.')
+                if section.lower() == 'style':
+                    setattr(self.Style, param, value)
+                elif section.lower() == 'state':
+                    setattr(self.state, param, value)
+                else:
+                    raise
 
         self.Style.Codebg = f"{BG}{self.Style.Dark}"
         self.Style.Link = f"{FG}{self.Style.Symbol}{UNDERLINE[0]}"
@@ -214,11 +227,9 @@ class Streamdown:
         self.Style.Blockquote = f"{FG}{self.Style.Grey}│ "
         self.Style.MarginSpaces = " " * self.Style.Margin
 
-        for attr in ['Links', 'Images', 'CodeSpaces', 'Network', 'Clipboard', 'Logging', 'Timeout', 'Savebrace']:
-            setattr(self.state, attr, features.get(attr))
-
         self.state.WidthArg = int(width) or style.get("Width") or 0
         self.state.prompt_regex = re.compile(prompt)
+
         self.width_calc()
         self._setup = True
 
@@ -1261,6 +1272,7 @@ def main():
     parser.add_argument("-l", "--loglevel", default="INFO", help="Set the logging level")
     parser.add_argument("-b", "--base", default=None, help="Set the hsv base: h,s,v")
     parser.add_argument("-c", "--config", default=None, help="Use a custom config override")
+    parser.add_argument("-cs","--config_string", default=None, help="A config_string override in the form ([Style|State].[Param]=[Value]:)*")
     parser.add_argument("-w", "--width", default="0", help="Set the width WIDTH")
     parser.add_argument("-e", "--exec", help="Wrap a program EXEC for more 'proper' i/o handling")
     parser.add_argument("-p", "--prompt", default="^.*>\\s+$", help="A PCRE regex prompt to detect (default: %(default)s)")
@@ -1294,7 +1306,7 @@ def main():
         if len(env_colors) > 1: S = float(env_colors[1])
         if len(env_colors) > 2: V = float(env_colors[2])
 
-    _sd.setup(config_path=args.config, H=H, S=S, V=V, scrape=args.scrape, width=args.width, prompt=args.prompt)
+    _sd.setup(config_path=args.config, config_string=args.config_string, H=H, S=S, V=V, scrape=args.scrape, width=args.width, prompt=args.prompt)
 
     logging.basicConfig(stream=sys.stdout, level=args.loglevel.upper(), format=f'%(message)s')
     if os.name != 'nt':
