@@ -18,7 +18,6 @@ import pygments.util
 import textwrap
 import argparse
 from io import BytesIO
-from term_image.image import from_file, from_url
 from wcwidth import wcwidth
 from functools import reduce
 from argparse import ArgumentParser
@@ -693,6 +692,9 @@ def line_format(line):
     footnotes = lambda match: ''.join([chr(SUPER[int(i)]) for i in match.group(1)])
 
     def process_images(match):
+        # only import this library if absolutely necessary
+        from term_image.image import from_file, from_url
+
         url = match.group(2)
         try:
             if re.match(r"https?://", url.lower()):
