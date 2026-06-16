@@ -214,6 +214,12 @@ class Streamdown:
             for stanza in config_string.split(":"):
                 key, value = stanza.split('=')
                 section, param = key.split('.')
+
+                totest = value.lower()
+                # bool coercion
+                if totest in ['true','false']:
+                    value = totest == 'true'
+
                 if section.lower() == 'style':
                     setattr(self.Style, param, value)
                 elif section.lower() == 'state':
