@@ -1337,7 +1337,12 @@ def main():
             for fname in args.filenameList:
                 if len(args.filenameList) > 1:
                     _sd.render(BytesIO(f"\n------\n# {fname}\n\n------\n".encode('utf-8')))
-                _sd.render(open(fname, "rb"))
+                if os.path.exists(fname):
+                    _sd.render(open(fname, "rb"))
+                else:
+                    logging.error(f"Fatal: File '{fname}' can not be read or does not exist.")
+                    # 2 is ENOENT
+                    sys.exit(2)
                 
         elif sys.stdin.isatty():
             parser.print_help()
