@@ -32,8 +32,10 @@ dependencies = [
     "toml",
     "wcwidth",
     "pylatexenc",
-    'term-image'
 ]
+
+[project.optional-dependencies]
+images = ["term-image"]
 
 [project.urls]
 "Homepage" = "https://github.com/day50-dev/Streamdown"
