@@ -6,7 +6,7 @@
 
 </p>
 
-The problem: Every terminal markdown renderer wants to take over your screen. You want one that just outputs formatted text without trying to hijack things into a full screen experience.
+The problem: Every terminal markdown renderer wants to take over your terminal. You want one that just outputs formatted text without trying to hijack things into a full screen experience.
 
 The solution: Streamdown, part of the [DAY50](https://day50.dev) suite of open-source tools for AI workflows, is designed for the wide variety of markdown from various LLM models. 
 
