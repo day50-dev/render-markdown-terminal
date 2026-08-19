@@ -224,10 +224,10 @@ class Streamdown:
                     # this one is "special" great...
                     if param == 'HSV':
                         import json
-                        _H, _S, _V = json.loads(value)
-                        H = _H or H
-                        S = _S or S
-                        V = _V or V
+                        _value = json.loads(value)
+                        H = len(_value) and _value.pop(0) or H
+                        S = len(_value) and _value.pop(0) or S
+                        V = len(_value) and _value.pop(0) or V
 
                         for color in ["Dark", "Mid", "Symbol", "Head", "Grey", "Bright"]:
                             setattr(self.Style, color, apply_multipliers(style, color, H, S, V))
