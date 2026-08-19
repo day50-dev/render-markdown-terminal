@@ -6,13 +6,13 @@
 
 </p>
 
-The problem: Every terminal markdown renderer wants to capture your screen. You want one that just outputs formatted text without trying to hijack things into a full screen experience.
+The problem: Every terminal markdown renderer wants to take over your terminal. You want one that just outputs formatted text without trying to hijack things into a full screen experience.
 
 The solution: Streamdown, part of the [DAY50](https://day50.dev) suite of open-source tools for AI workflows, is designed for the wide variety of markdown from various LLM models. 
 
 Beautify markdown from any terminal application, any source, in any context, in realtime.
 
-As both a fast standards-compliant library and a powerful CLI, it supports standard piping and files as arguments like any normal pager but can also run as a wrapper so you retain full keyboard interactivity. Arrow keys, control, alt, all still work.
+As both a fast standards-compliant library and a powerful CLI, streamdown supports standard piping and files as arguments like any normal pager but can also run as a wrapper so you retain full keyboard interactivity. Arrow keys, control, alt, all still work.
 ```bash
 $ uv tool install streamdown
 ```
