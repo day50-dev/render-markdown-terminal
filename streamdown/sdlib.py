@@ -215,12 +215,24 @@ class Streamdown:
                 section, param = key.split('.')
 
                 totest = value.lower()
+
                 # bool coercion
                 if totest in ['true','false']:
                     value = totest == 'true'
 
                 if section.lower() == 'style':
-                    setattr(self.Style, param, value)
+                    # this one is "special" great...
+                    if param == 'HSV':
+                        import json
+                        _H, _S, _V = json.loads(value)
+                        H = _H or H
+                        S = _S or S
+                        V = _V or V
+
+                        for color in ["Dark", "Mid", "Symbol", "Head", "Grey", "Bright"]:
+                            setattr(self.Style, color, apply_multipliers(style, color, H, S, V))
+                    else:
+                        setattr(self.Style, param, value)
                 elif section.lower() == 'state':
                     setattr(self.state, param, value)
                 else:
